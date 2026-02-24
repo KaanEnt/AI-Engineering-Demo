@@ -33,7 +33,7 @@ export function ChatInput({ input, setInput, onSend, isLoading }: ChatInputProps
   return (
     <div className="flex gap-2">
       <div className="relative flex-1 group">
-        <div className="absolute left-3 top-2.5 text-muted-foreground group-focus-within:text-cyan-400 transition-colors">
+        <div className="absolute left-3 top-2.5 text-neutral-600 group-focus-within:text-white transition-colors">
           <Terminal size={12} />
         </div>
         <textarea
@@ -46,10 +46,10 @@ export function ChatInput({ input, setInput, onSend, isLoading }: ChatInputProps
           onKeyDown={handleKeyDown}
           disabled={isLoading}
           className={cn(
-            "w-full bg-muted/30 border border-input border-dashed rounded-none min-h-[32px] max-h-[120px] resize-none",
-            "font-mono text-[10px] p-2 pl-8 outline-none transition-all",
-            "placeholder:text-muted-foreground/50 text-foreground",
-            "focus:bg-cyan-500/5 focus:ring-1 focus:ring-cyan-500/20 focus:border-cyan-500",
+            "w-full bg-neutral-900 border border-neutral-700 border-dashed rounded-none min-h-[32px] max-h-[120px] resize-none",
+            "font-mono text-[10px] p-2 pl-8 outline-none transition-all text-white",
+            "placeholder:text-neutral-600",
+            "focus:bg-neutral-900 focus:ring-1 focus:ring-neutral-500 focus:border-neutral-500",
             isLoading && "opacity-50 cursor-not-allowed"
           )}
         />
@@ -59,10 +59,10 @@ export function ChatInput({ input, setInput, onSend, isLoading }: ChatInputProps
         onClick={onSend}
         disabled={isLoading || !input.trim()}
         className={cn(
-          "px-4 h-8 border bg-card font-bold uppercase text-[9px] tracking-[0.15em] border-dashed transition-all flex items-center justify-center gap-1.5 rounded-none self-end",
+          "px-4 h-8 border border-neutral-700 bg-black text-neutral-400 font-bold uppercase text-[9px] tracking-[0.15em] border-dashed transition-all flex items-center justify-center gap-1.5 rounded-none self-end",
           !isLoading &&
             input.trim() &&
-            "hover:border-cyan-500 hover:text-cyan-400 hover:bg-cyan-500/5 active:scale-95",
+            "hover:border-white hover:text-white hover:bg-neutral-900 active:scale-95",
           (isLoading || !input.trim()) && "opacity-40 cursor-not-allowed"
         )}
       >

@@ -14,12 +14,9 @@ export const tools = {
 Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`,
     parameters: z.object({
       command: z.string().describe('The shell command to execute'),
-      timeout: z
-        .number()
-        .optional()
-        .describe('Timeout in milliseconds (default: 30000, max: 300000)'),
+      timeout: z.number().default(30000).describe('Timeout in milliseconds (default: 30000, max: 300000)'),
     }),
-    execute: async ({ command, timeout = 30000 }) => {
+    execute: async ({ command, timeout }) => {
       const effectiveTimeout = Math.min(timeout, 300000);
       const result = await executeCommand(command, effectiveTimeout);
 

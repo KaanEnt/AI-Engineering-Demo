@@ -132,15 +132,15 @@
 }
 
 .chatbar-root ::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
+  background: #171717;
   border-radius: 3px;
 }
 
 .chatbar-root ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
+  background: #404040;
   border-radius: 3px;
 }
 
 .chatbar-root ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: #525252;
 }

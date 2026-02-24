@@ -65,19 +65,9 @@ function SkillBadge({ toolName }: { toolName: string }) {
   if (!meta) return null;
 
   const Icon = SKILL_ICONS[meta.icon];
-  const colorMap = {
-    blue: "bg-blue-500/10 text-blue-400 border-blue-500/30",
-    amber: "bg-amber-500/10 text-amber-400 border-amber-500/30",
-    emerald: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
-  };
 
   return (
-    <div
-      className={cn(
-        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[9px] font-mono uppercase tracking-wide mb-1",
-        colorMap[meta.color]
-      )}
-    >
+    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-neutral-700 bg-neutral-900 text-[9px] font-mono uppercase tracking-wide mb-1 text-neutral-300">
       <Icon size={10} />
       <span>{meta.name}</span>
     </div>
@@ -91,13 +81,13 @@ function ToolInvocationDisplay({ toolInvocation }: { toolInvocation: ToolInvocat
     switch (state) {
       case "partial-call":
       case "call":
-        return "text-yellow-500";
+        return "text-neutral-400";
       case "result":
         return (result as { success?: boolean })?.success
-          ? "text-green-500"
-          : "text-red-500";
+          ? "text-white"
+          : "text-neutral-400";
       default:
-        return "text-muted-foreground";
+        return "text-neutral-500";
     }
   };
 
@@ -119,7 +109,7 @@ function ToolInvocationDisplay({ toolInvocation }: { toolInvocation: ToolInvocat
   } | undefined;
 
   return (
-    <div className="my-1 p-2 rounded bg-muted/20 border border-dashed border-muted-foreground/30">
+    <div className="my-1 p-2 rounded bg-neutral-900 border border-dashed border-neutral-700">
       <div
         className={cn(
           "flex items-center gap-2 text-[9px] font-mono uppercase",
@@ -128,13 +118,13 @@ function ToolInvocationDisplay({ toolInvocation }: { toolInvocation: ToolInvocat
       >
         {getStatusIcon()}
         <span>{toolName}</span>
-        <span className="text-muted-foreground/60">
+        <span className="text-neutral-600">
           {state === "result" ? "completed" : "executing..."}
         </span>
       </div>
 
       {toolName === "run_command" && !!args?.command && (
-        <div className="mt-1 text-[10px] font-mono text-muted-foreground/80 truncate">
+        <div className="mt-1 text-[10px] font-mono text-neutral-500 truncate">
           $ {String(args.command)}
         </div>
       )}
@@ -143,33 +133,33 @@ function ToolInvocationDisplay({ toolInvocation }: { toolInvocation: ToolInvocat
         toolName === "write_file" ||
         toolName === "list_directory") &&
         !!args?.path && (
-          <div className="mt-1 text-[10px] font-mono text-muted-foreground/80 truncate">
+          <div className="mt-1 text-[10px] font-mono text-neutral-500 truncate">
             {String(args.path)}
           </div>
         )}
 
       {toolName === "scrape_devpost" && !!args?.gallery_url && (
-        <div className="mt-1 text-[10px] font-mono text-muted-foreground/80 truncate">
+        <div className="mt-1 text-[10px] font-mono text-neutral-500 truncate">
           {String(args.gallery_url)}
         </div>
       )}
 
       {toolName === "extract_document" && !!args?.file_path && (
-        <div className="mt-1 text-[10px] font-mono text-muted-foreground/80 truncate">
+        <div className="mt-1 text-[10px] font-mono text-neutral-500 truncate">
           {String(args.file_path)}
         </div>
       )}
 
       {toolName === "create_diagram" && !!args?.filename && (
-        <div className="mt-1 text-[10px] font-mono text-muted-foreground/80 truncate">
+        <div className="mt-1 text-[10px] font-mono text-neutral-500 truncate">
           {String(args.filename)}.dot
         </div>
       )}
 
       {state === "result" && typedResult && (
-        <div className="mt-1 text-[10px] font-mono text-muted-foreground/60 max-h-20 overflow-hidden">
+        <div className="mt-1 text-[10px] font-mono text-neutral-500 max-h-20 overflow-hidden">
           {typedResult.error && (
-            <span className="text-red-400">{String(typedResult.error)}</span>
+            <span className="text-neutral-400">{String(typedResult.error)}</span>
           )}
           {typedResult.stdout && typedResult.stdout.length > 0 && (
             <pre className="whitespace-pre-wrap truncate">
@@ -184,7 +174,7 @@ function ToolInvocationDisplay({ toolInvocation }: { toolInvocation: ToolInvocat
             </pre>
           )}
           {typedResult.outputPath && (
-            <span className="text-emerald-400">{typedResult.outputPath}</span>
+            <span className="text-white">{typedResult.outputPath}</span>
           )}
           {typedResult.files && (
             <span>
@@ -238,15 +228,15 @@ export function ChatMessages({ messages, status, error }: ChatMessagesProps) {
                 className={cn(
                   "text-xs font-mono p-2 rounded",
                   msg.role === "user"
-                    ? "bg-cyan-500/10 text-cyan-300 ml-4"
-                    : "bg-muted/30 text-muted-foreground"
+                    ? "bg-white/5 text-white ml-4"
+                    : "bg-neutral-900 text-neutral-300"
                 )}
               >
-                <span className="text-[9px] text-muted-foreground/60 mr-2">
+                <span className="text-[9px] text-neutral-600 mr-2">
                   [{msg.role === "user" ? "USER" : "SYS"}]
                 </span>
                 {msg.role === "assistant" ? (
-                  <span className="whitespace-pre-wrap prose prose-invert prose-xs max-w-none [&_pre]:bg-muted/40 [&_pre]:p-2 [&_pre]:rounded [&_pre]:text-[10px] [&_code]:text-cyan-300 [&_code]:text-[10px] [&_a]:text-cyan-400 [&_a]:underline">
+                  <span className="whitespace-pre-wrap prose prose-invert prose-xs max-w-none [&_pre]:bg-neutral-800 [&_pre]:p-2 [&_pre]:rounded [&_pre]:text-[10px] [&_code]:text-white [&_code]:text-[10px] [&_a]:text-neutral-300 [&_a]:underline">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
                   </span>
                 ) : (
@@ -272,8 +262,8 @@ export function ChatMessages({ messages, status, error }: ChatMessagesProps) {
       {isLoading &&
         messages.length > 0 &&
         messages[messages.length - 1]?.role === "user" && (
-          <div className="text-xs font-mono p-2 rounded bg-muted/30 text-muted-foreground">
-            <span className="text-[9px] text-muted-foreground/60 mr-2">[SYS]</span>
+          <div className="text-xs font-mono p-2 rounded bg-neutral-900 text-neutral-400">
+            <span className="text-[9px] text-neutral-600 mr-2">[SYS]</span>
             <span className="inline-flex items-center gap-2">
               <Loader2 className="w-3 h-3 animate-spin" />
               Processing...
@@ -282,7 +272,7 @@ export function ChatMessages({ messages, status, error }: ChatMessagesProps) {
         )}
 
       {error && (
-        <div className="text-xs font-mono p-2 rounded bg-red-500/10 text-red-400">
+        <div className="text-xs font-mono p-2 rounded bg-neutral-900 border border-neutral-700 text-neutral-300">
           <span className="text-[9px] mr-2">[ERROR]</span>
           {String(error.message || error)}
         </div>

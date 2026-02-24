@@ -94,43 +94,39 @@ export function Chat() {
             exit={{ height: COLLAPSED_HEIGHT, opacity: 0.8 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            <div className="h-full bg-card/95 backdrop-blur-md border-t border-border/50 border-dashed overflow-hidden relative">
+            <div className="h-full bg-black border-t border-neutral-700 overflow-hidden relative">
               <CreateCorners>
-                <PlusIcon className="w-4 h-4 text-cyan-400" />
+                <PlusIcon className="w-4 h-4 text-neutral-600" />
               </CreateCorners>
 
               {/* Grid background */}
               <div
-                className="absolute inset-0 z-0 pointer-events-none"
+                className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]"
                 style={{
                   backgroundImage: `
-                    linear-gradient(to right, hsl(var(--muted)) 1px, transparent 1px),
-                    linear-gradient(to bottom, hsl(var(--muted)) 1px, transparent 1px)
+                    linear-gradient(to right, white 1px, transparent 1px),
+                    linear-gradient(to bottom, white 1px, transparent 1px)
                   `,
                   backgroundSize: "24px 24px",
-                  WebkitMaskImage:
-                    "radial-gradient(ellipse 80% 80% at 0% 0%, #000 50%, transparent 90%)",
-                  maskImage:
-                    "radial-gradient(ellipse 80% 80% at 0% 0%, #000 50%, transparent 90%)",
                 }}
               />
 
               <div className="relative z-10 h-full flex flex-col p-3">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-2 pb-2 border-b border-cyan-500/30">
-                  <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-400 flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse" />
+                <div className="flex items-center justify-between mb-2 pb-2 border-b border-neutral-700">
+                  <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-white flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                     <span>Agent Terminal</span>
                     {isLoading && (
-                      <Loader2 className="w-3 h-3 animate-spin ml-2" />
+                      <Loader2 className="w-3 h-3 animate-spin ml-2 text-neutral-400" />
                     )}
                   </h2>
                   <button
                     onClick={() => setOpen(false)}
-                    className="p-1 hover:bg-muted/50 rounded transition-colors"
+                    className="p-1 hover:bg-neutral-800 rounded transition-colors"
                     aria-label="Minimize chat"
                   >
-                    <Minimize2 className="w-3.5 h-3.5 text-muted-foreground" />
+                    <Minimize2 className="w-3.5 h-3.5 text-neutral-500" />
                   </button>
                 </div>
 
@@ -147,19 +143,19 @@ export function Chat() {
 
                 {/* Status bar */}
                 <div className="mt-2 flex items-center justify-between">
-                  <span className="text-[9px] font-mono uppercase tracking-widest text-muted-foreground">
+                  <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500">
                     Status:{" "}
                     {isLoading ? (
-                      <span className="text-yellow-500">Processing...</span>
+                      <span className="text-neutral-300">Processing...</span>
                     ) : error ? (
-                      <span className="text-red-500">Error</span>
+                      <span className="text-neutral-300">Error</span>
                     ) : (
-                      <span className="text-cyan-500 border border-cyan-500/50 px-1">
+                      <span className="text-white border border-neutral-600 px-1">
                         Ready
                       </span>
                     )}
                   </span>
-                  <span className="text-[9px] font-mono uppercase tracking-widest text-cyan-500">
+                  <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-500">
                     AGENT_MODE
                   </span>
                 </div>
@@ -175,7 +171,7 @@ export function Chat() {
             transition={{ duration: 0.15 }}
           >
             <div
-              className="h-12 bg-card/80 backdrop-blur-sm border-t border-border/50 border-dashed cursor-pointer hover:border-cyan-500/50 transition-colors relative overflow-hidden"
+              className="h-12 bg-black border-t border-neutral-700 cursor-pointer hover:border-neutral-500 transition-colors relative overflow-hidden"
               onClick={toggleOpen}
               role="button"
               tabIndex={0}
@@ -185,14 +181,14 @@ export function Chat() {
               }}
             >
               <CreateCorners>
-                <PlusIcon className="w-3 h-3 text-cyan-400/50" />
+                <PlusIcon className="w-3 h-3 text-neutral-700" />
               </CreateCorners>
               <div className="h-full flex items-center justify-center gap-3 p-3 relative z-10">
-                <Terminal className="w-4 h-4 text-cyan-400" />
-                <span className="text-xs font-mono text-muted-foreground">
+                <Terminal className="w-4 h-4 text-white" />
+                <span className="text-xs font-mono text-neutral-400">
                   Click to open agent terminal...
                 </span>
-                <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse" />
+                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
               </div>
             </div>
           </motion.div>
