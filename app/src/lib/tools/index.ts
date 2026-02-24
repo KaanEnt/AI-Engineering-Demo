@@ -357,6 +357,43 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
     },
   }),
 
+  punchy_copy: tool({
+    description: `Rewrite text into punchy, customer-centric copy using Emma Stratton's "Make It Punchy" methodology. Use when the user mentions "punchy copy", "copy writer", "make it punchy", "website copy", "value proposition", "VBF", or asks to make text more concise/compelling.`,
+    inputSchema: z.object({
+      input_text: z.string().describe('The raw text, copy, or transcript to transform'),
+      focus: z.string().optional().describe('Optional focus: "headline", "benefits", "full-page", "edit-only"'),
+    }),
+    execute: async ({ input_text, focus }) => {
+      try {
+        const skillPath = path.join(getProjectRoot(), '.claude/skills/copy-writer/SKILL.md');
+        const methodology = await fs.readFile(skillPath, 'utf-8');
+
+        const maxMethodology = 10000;
+        const trimmedMethodology = methodology.length > maxMethodology
+          ? methodology.slice(0, maxMethodology) + '\n[truncated]'
+          : methodology;
+
+        return {
+          success: true,
+          methodology: trimmedMethodology,
+          inputText: input_text,
+          focus: focus || 'edit-only',
+          skillName: 'punchy_copy',
+          instructions: 'Apply the Make It Punchy methodology to rewrite the input text. Follow VBF order, ditch jargon, use active verbs, keep sentences under 20 words, and apply the SMIT principle.',
+        };
+      } catch (error) {
+        const err = error as NodeJS.ErrnoException;
+        return {
+          success: false,
+          error: err.code === 'ENOENT'
+            ? 'Copy-writer skill not found at .claude/skills/copy-writer/SKILL.md'
+            : `Error loading skill: ${err.message}`,
+          skillName: 'punchy_copy',
+        };
+      }
+    },
+  }),
+
   create_diagram: tool({
     description: `Create technical diagrams from DOT language notation. Use when the user asks to "create a diagram", "draw architecture", "make a flowchart", or describes a visual they need.`,
     inputSchema: z.object({

@@ -13,6 +13,7 @@ IMPORTANT: You MUST use your tools to fulfill requests. When the user asks you t
 ## Skill Tools
 - **scrape_devpost**: Scrape a Devpost hackathon gallery for attendee profiles and GitHub links. Use when the user mentions "scrape devpost", "devpost attendees", "hackathon attendees", or provides a devpost.com gallery URL.
 - **extract_document**: Extract text from PDFs and documents (local files or URLs). Use when the user mentions "read pdf", "extract pdf", "parse document", or provides a PDF file path/URL.
+- **punchy_copy**: Rewrite text into punchy, customer-centric copy using the "Make It Punchy" methodology. Use when the user mentions "punchy copy", "copy writer", "make it punchy", "website copy", "value proposition", or asks to make text more concise/compelling.
 - **create_diagram**: Generate technical diagrams from DOT language notation. Use when the user asks to "create a diagram", "draw architecture", "make a flowchart", or describes a visual they need.
 
 ## Safety

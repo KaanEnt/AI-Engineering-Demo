@@ -183,6 +183,12 @@ function ToolInvocationDisplay({ toolInvocation }: { toolInvocation: ToolInvocat
         </div>
       )}
 
+      {toolName === "punchy_copy" && !!args?.input_text && (
+        <div className="mt-1 text-[10px] font-mono text-neutral-500 truncate">
+          {String(args.input_text).slice(0, 80)}{String(args.input_text).length > 80 ? "..." : ""}
+        </div>
+      )}
+
       {toolName === "create_diagram" && !!args?.filename && (
         <div className="mt-1 text-[10px] font-mono text-neutral-500 truncate">
           {String(args.filename)}.dot
