@@ -2,7 +2,7 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { executeCommand, validateWritePath, getProjectRoot } from './sandbox';
+import { executeCommand, validateWritePath, validateEditPath, getProjectRoot } from './sandbox';
 
 export const tools = {
   run_command: tool({
@@ -42,7 +42,7 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
 
         const content = await fs.readFile(fullPath, 'utf-8');
 
-        const maxLength = 50000;
+        const maxLength = 15000;
         if (content.length > maxLength) {
           return {
             success: true,
@@ -104,6 +104,35 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
     },
   }),
 
+  edit_file: tool({
+    description: `Edit or create a file anywhere in the project. Use for modifying source code, configs, or any project file. Blocked: .env files, node_modules, .git, lockfiles.`,
+    inputSchema: z.object({
+      file_path: z.string().describe('Path relative to project root'),
+      content: z.string().describe('Full new content for the file'),
+    }),
+    execute: async ({ file_path, content }) => {
+      const validation = validateEditPath(file_path);
+      if (!validation.valid) {
+        return { success: false, error: validation.error };
+      }
+
+      try {
+        const fullPath = path.join(getProjectRoot(), file_path);
+        await fs.mkdir(path.dirname(fullPath), { recursive: true });
+        await fs.writeFile(fullPath, content, 'utf-8');
+
+        return {
+          success: true,
+          message: `File written successfully: ${file_path}`,
+          bytesWritten: Buffer.byteLength(content, 'utf-8'),
+        };
+      } catch (error) {
+        const err = error as Error;
+        return { success: false, error: `Error editing file: ${err.message}` };
+      }
+    },
+  }),
+
   list_directory: tool({
     description: `List files and directories in a given path. Paths are relative to the project root.`,
     inputSchema: z.object({
@@ -158,9 +187,13 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
         `node scripts/devpost-scraper.js "${gallery_url}"`,
         300000
       );
+      const maxOut = 10000;
+      const stdout = result.stdout && result.stdout.length > maxOut
+        ? result.stdout.slice(0, maxOut) + '\n[truncated]'
+        : result.stdout;
       return {
         success: result.exitCode === 0,
-        stdout: result.stdout,
+        stdout,
         stderr: result.stderr,
         exitCode: result.exitCode,
         skillName: 'scrape_devpost',
@@ -178,9 +211,13 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
         `python3 .claude/skills/doc-reader/scripts/extract-pdf.py "${file_path}"`,
         60000
       );
+      const maxOut = 10000;
+      const content = result.stdout && result.stdout.length > maxOut
+        ? result.stdout.slice(0, maxOut) + '\n[truncated]'
+        : result.stdout;
       return {
         success: result.exitCode === 0,
-        content: result.stdout,
+        content,
         error: result.stderr,
         skillName: 'extract_document',
       };
@@ -215,7 +252,7 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
         const html = await response.text();
 
         if (contentType.includes('application/json')) {
-          const maxLen = 50000;
+          const maxLen = 8000;
           return {
             success: true,
             url,
@@ -302,7 +339,7 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
           ? extractions.join('\n\n') + '\n\n--- Page Content ---\n\n' + text
           : text;
 
-        const maxLength = 50000;
+        const maxLength = 8000;
         const truncated = finalContent.length > maxLength;
         if (truncated) {
           finalContent = finalContent.slice(0, maxLength) + '\n[truncated]';

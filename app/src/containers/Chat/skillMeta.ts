@@ -31,4 +31,10 @@ export const SKILL_META: Record<
     color: "emerald",
     description: "Creates technical diagrams",
   },
+  edit_file: {
+    name: "File Editor",
+    icon: "FileText",
+    color: "amber",
+    description: "Edits project files",
+  },
 };

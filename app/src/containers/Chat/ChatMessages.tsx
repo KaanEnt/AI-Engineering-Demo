@@ -122,6 +122,8 @@ function ToolInvocationDisplay({ toolInvocation }: { toolInvocation: ToolInvocat
     error?: string;
     stdout?: string;
     content?: string;
+    message?: string;
+    bytesWritten?: number;
     files?: string[];
     directories?: string[];
     outputPath?: string;
@@ -164,6 +166,12 @@ function ToolInvocationDisplay({ toolInvocation }: { toolInvocation: ToolInvocat
       )}
 
       {toolName === "extract_document" && !!args?.file_path && (
+        <div className="mt-1 text-[10px] font-mono text-neutral-500 truncate">
+          {String(args.file_path)}
+        </div>
+      )}
+
+      {toolName === "edit_file" && !!args?.file_path && (
         <div className="mt-1 text-[10px] font-mono text-neutral-500 truncate">
           {String(args.file_path)}
         </div>

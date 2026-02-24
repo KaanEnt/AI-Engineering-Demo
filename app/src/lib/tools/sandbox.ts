@@ -122,15 +122,15 @@ export async function executeCommand(
 
     child.stdout?.on('data', (data: Buffer) => {
       stdout += data.toString();
-      if (stdout.length > 100000) {
-        stdout = stdout.slice(-100000);
+      if (stdout.length > 10000) {
+        stdout = stdout.slice(-10000);
       }
     });
 
     child.stderr?.on('data', (data: Buffer) => {
       stderr += data.toString();
-      if (stderr.length > 100000) {
-        stderr = stderr.slice(-100000);
+      if (stderr.length > 3000) {
+        stderr = stderr.slice(-3000);
       }
     });
 
@@ -159,6 +159,35 @@ export async function executeCommand(
       });
     });
   });
+}
+
+const BLOCKED_EDIT_PATTERNS = [
+  /(?:^|\/)\.env(?:\.|$)/i,
+  /(?:^|\/)node_modules\//i,
+  /(?:^|\/)\.git\//i,
+  /(?:^|\/)package-lock\.json$/i,
+  /(?:^|\/)yarn\.lock$/i,
+  /(?:^|\/)pnpm-lock\.yaml$/i,
+];
+
+export function validateEditPath(filePath: string): { valid: boolean; error?: string } {
+  const normalized = filePath.replace(/\\/g, '/');
+
+  if (normalized.includes('..')) {
+    return { valid: false, error: 'Path traversal (..) not allowed' };
+  }
+
+  if (/^[a-zA-Z]:/.test(normalized) || normalized.startsWith('/')) {
+    return { valid: false, error: 'Absolute paths not allowed — use a path relative to the project root' };
+  }
+
+  for (const pattern of BLOCKED_EDIT_PATTERNS) {
+    if (pattern.test(normalized)) {
+      return { valid: false, error: `Editing blocked for safety: ${filePath}` };
+    }
+  }
+
+  return { valid: true };
 }
 
 export function getProjectRoot(): string {
