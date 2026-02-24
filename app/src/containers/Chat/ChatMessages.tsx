@@ -16,20 +16,27 @@ interface ToolInvocationData {
   result?: unknown;
 }
 
-function getMessageContent(message: UIMessage): string {
-  if (!message.parts) return "";
-  return message.parts
-    .filter((part): part is { type: "text"; text: string } => part.type === "text")
-    .map((part) => part.text)
-    .join("");
-}
+type OrderedPart =
+  | { kind: "text"; content: string }
+  | { kind: "tool"; invocation: ToolInvocationData };
 
-function getToolInvocations(message: UIMessage): ToolInvocationData[] {
+function getOrderedParts(message: UIMessage): OrderedPart[] {
   if (!message.parts) return [];
 
-  const invocations: ToolInvocationData[] = [];
+  const groups: OrderedPart[] = [];
 
   for (const part of message.parts) {
+    if (part.type === "text") {
+      const textPart = part as { type: "text"; text: string };
+      const last = groups[groups.length - 1];
+      if (last && last.kind === "text") {
+        last.content += textPart.text;
+      } else {
+        groups.push({ kind: "text", content: textPart.text });
+      }
+      continue;
+    }
+
     const partType = part.type as string;
 
     if (partType === "dynamic-tool") {
@@ -41,12 +48,15 @@ function getToolInvocations(message: UIMessage): ToolInvocationData[] {
         input?: unknown;
         output?: unknown;
       };
-      invocations.push({
-        toolCallId: dynPart.toolCallId,
-        toolName: dynPart.toolName,
-        args: (dynPart.input as Record<string, unknown>) || {},
-        state: dynPart.state,
-        result: dynPart.output,
+      groups.push({
+        kind: "tool",
+        invocation: {
+          toolCallId: dynPart.toolCallId,
+          toolName: dynPart.toolName,
+          args: (dynPart.input as Record<string, unknown>) || {},
+          state: dynPart.state,
+          result: dynPart.output,
+        },
       });
     } else if (partType.startsWith("tool-")) {
       const toolPart = part as unknown as {
@@ -56,20 +66,20 @@ function getToolInvocations(message: UIMessage): ToolInvocationData[] {
         input?: unknown;
         output?: unknown;
       };
-
-      const toolName = partType.slice(5);
-
-      invocations.push({
-        toolCallId: toolPart.toolCallId,
-        toolName,
-        args: (toolPart.input as Record<string, unknown>) || {},
-        state: toolPart.state,
-        result: toolPart.output,
+      groups.push({
+        kind: "tool",
+        invocation: {
+          toolCallId: toolPart.toolCallId,
+          toolName: partType.slice(5),
+          args: (toolPart.input as Record<string, unknown>) || {},
+          state: toolPart.state,
+          result: toolPart.output,
+        },
       });
     }
   }
 
-  return invocations;
+  return groups;
 }
 
 const SKILL_ICONS = {
@@ -257,43 +267,45 @@ export function ChatMessages({ messages, status, error }: ChatMessagesProps) {
   return (
     <div className="flex-1 overflow-auto space-y-2 mb-2">
       {displayMessages.map((msg) => {
-        const content = getMessageContent(msg);
-        const toolInvocations = getToolInvocations(msg);
+        const orderedParts = getOrderedParts(msg);
 
         return (
           <div key={msg.id}>
-            {content && (
-              <div
-                className={cn(
-                  "text-xs font-mono p-2 rounded",
-                  msg.role === "user"
-                    ? "bg-white/5 text-white ml-4"
-                    : "bg-neutral-900 text-neutral-300"
-                )}
-              >
-                <span className="text-[9px] text-neutral-600 mr-2">
-                  [{msg.role === "user" ? "USER" : "SYS"}]
-                </span>
-                {msg.role === "assistant" ? (
-                  <span className="whitespace-pre-wrap prose prose-invert prose-xs max-w-none [&_pre]:bg-neutral-800 [&_pre]:p-2 [&_pre]:rounded [&_pre]:text-[10px] [&_code]:text-white [&_code]:text-[10px] [&_a]:text-neutral-300 [&_a]:underline">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-                  </span>
-                ) : (
-                  <span className="whitespace-pre-wrap">{content}</span>
-                )}
-              </div>
-            )}
-
-            {toolInvocations.length > 0 && (
-              <div className="ml-2 mt-1">
-                {toolInvocations.map((toolInvocation) => (
-                  <div key={toolInvocation.toolCallId}>
-                    <SkillBadge toolName={toolInvocation.toolName} />
-                    <ToolInvocationDisplay toolInvocation={toolInvocation} />
+            {orderedParts.map((group, idx) => {
+              if (group.kind === "text" && group.content) {
+                return (
+                  <div
+                    key={`${msg.id}-text-${idx}`}
+                    className={cn(
+                      "text-xs font-mono p-2 rounded",
+                      msg.role === "user"
+                        ? "bg-white/5 text-white ml-4"
+                        : "bg-neutral-900 text-neutral-300"
+                    )}
+                  >
+                    <span className="text-[9px] text-neutral-600 mr-2">
+                      [{msg.role === "user" ? "USER" : "SYS"}]
+                    </span>
+                    {msg.role === "assistant" ? (
+                      <span className="whitespace-pre-wrap prose prose-invert prose-xs max-w-none [&_pre]:bg-neutral-800 [&_pre]:p-2 [&_pre]:rounded [&_pre]:text-[10px] [&_code]:text-white [&_code]:text-[10px] [&_a]:text-neutral-300 [&_a]:underline">
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{group.content}</ReactMarkdown>
+                      </span>
+                    ) : (
+                      <span className="whitespace-pre-wrap">{group.content}</span>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
+                );
+              }
+              if (group.kind === "tool") {
+                return (
+                  <div key={group.invocation.toolCallId} className="ml-2 my-1">
+                    <SkillBadge toolName={group.invocation.toolName} />
+                    <ToolInvocationDisplay toolInvocation={group.invocation} />
+                  </div>
+                );
+              }
+              return null;
+            })}
           </div>
         );
       })}
