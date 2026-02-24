@@ -193,9 +193,9 @@ function ToolInvocationDisplay({ toolInvocation }: { toolInvocation: ToolInvocat
         </div>
       )}
 
-      {toolName === "punchy_copy" && !!args?.input_text && (
+      {toolName === "use_skill" && !!args?.skill_name && (
         <div className="mt-1 text-[10px] font-mono text-neutral-500 truncate">
-          {String(args.input_text).slice(0, 80)}{String(args.input_text).length > 80 ? "..." : ""}
+          {String(args.skill_name)}
         </div>
       )}
 

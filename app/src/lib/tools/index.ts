@@ -357,40 +357,47 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
     },
   }),
 
-  punchy_copy: tool({
-    description: `Rewrite text into punchy, customer-centric copy using Emma Stratton's "Make It Punchy" methodology. Use when the user mentions "punchy copy", "copy writer", "make it punchy", "website copy", "value proposition", "VBF", or asks to make text more concise/compelling.`,
+  use_skill: tool({
+    description: `Load a project skill's methodology from .claude/skills/. Use when the user's request matches a discovered skill. The skill's full instructions are returned for you to apply.`,
     inputSchema: z.object({
-      input_text: z.string().describe('The raw text, copy, or transcript to transform'),
-      focus: z.string().optional().describe('Optional focus: "headline", "benefits", "full-page", "edit-only"'),
+      skill_name: z.string().describe('Folder name under .claude/skills/ (e.g. "copy-writer", "doc-reader")'),
+      input_text: z.string().optional().describe('Optional text input for the skill to process'),
     }),
-    execute: async ({ input_text, focus }) => {
-      try {
-        const skillPath = path.join(getProjectRoot(), '.claude/skills/copy-writer/SKILL.md');
-        const methodology = await fs.readFile(skillPath, 'utf-8');
+    execute: async ({ skill_name, input_text }) => {
+      const normalized = skill_name.replace(/\\/g, '/');
+      if (normalized.includes('..') || normalized.includes('/')) {
+        return { success: false, error: 'Invalid skill name' };
+      }
 
-        const maxMethodology = 10000;
-        const trimmedMethodology = methodology.length > maxMethodology
-          ? methodology.slice(0, maxMethodology) + '\n[truncated]'
-          : methodology;
+      const skillDir = path.join(getProjectRoot(), '.claude', 'skills', skill_name);
 
-        return {
-          success: true,
-          methodology: trimmedMethodology,
-          inputText: input_text,
-          focus: focus || 'edit-only',
-          skillName: 'punchy_copy',
-          instructions: 'Apply the Make It Punchy methodology to rewrite the input text. Follow VBF order, ditch jargon, use active verbs, keep sentences under 20 words, and apply the SMIT principle.',
-        };
-      } catch (error) {
-        const err = error as NodeJS.ErrnoException;
+      let content: string | null = null;
+      for (const filename of ['SKILL.md', 'skill.md']) {
+        try {
+          content = await fs.readFile(path.join(skillDir, filename), 'utf-8');
+          break;
+        } catch { /* try next */ }
+      }
+
+      if (!content) {
         return {
           success: false,
-          error: err.code === 'ENOENT'
-            ? 'Copy-writer skill not found at .claude/skills/copy-writer/SKILL.md'
-            : `Error loading skill: ${err.message}`,
-          skillName: 'punchy_copy',
+          error: `Skill "${skill_name}" not found. Check .claude/skills/ for available skills.`,
         };
       }
+
+      const maxLen = 10000;
+      const methodology = content.length > maxLen
+        ? content.slice(0, maxLen) + '\n[truncated]'
+        : content;
+
+      return {
+        success: true,
+        skillName: skill_name,
+        methodology,
+        inputText: input_text || null,
+        instructions: 'Apply this skill methodology to fulfill the user request. Follow its framework, rules, and output format.',
+      };
     },
   }),
 

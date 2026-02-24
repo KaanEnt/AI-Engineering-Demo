@@ -1,7 +1,7 @@
 import { streamText, convertToModelMessages, type UIMessage, stepCountIs } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { tools } from '@/lib/tools';
-import { SYSTEM_PROMPT } from '@/lib/prompts/system';
+import { getSystemPrompt } from '@/lib/prompts/system';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -21,9 +21,11 @@ export async function POST(req: Request) {
       apiKey: process.env.ANTHROPIC_API_KEY,
     });
 
+    const systemPrompt = await getSystemPrompt();
+
     const result = streamText({
       model: anthropic('claude-sonnet-4-20250514'),
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: await convertToModelMessages(messages),
       tools,
       stopWhen: stepCountIs(10),

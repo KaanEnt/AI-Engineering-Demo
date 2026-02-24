@@ -37,10 +37,10 @@ export const SKILL_META: Record<
     color: "amber",
     description: "Edits project files",
   },
-  punchy_copy: {
-    name: "Punchy Copy Writer",
+  use_skill: {
+    name: "Skill Loader",
     icon: "FileText",
     color: "amber",
-    description: "Rewrites text into punchy copy",
+    description: "Loads project skill methodology",
   },
 };
