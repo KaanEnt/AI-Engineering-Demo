@@ -1,5 +1,7 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+I want this chat terminal to be persistent and on the bottom side of the screen, take design inspiration from the @.specstory/reference/chatbar-package reference
+
 ## Getting Started
 
 First, run the development server:

@@ -124,3 +124,23 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Chatbar scrollbar styling */
+.chatbar-root ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.chatbar-root ::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 3px;
+}
+
+.chatbar-root ::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+.chatbar-root ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}

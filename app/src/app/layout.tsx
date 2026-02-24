@@ -29,7 +29,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AppShell>{children}</AppShell>
+        <div className="pb-12">
+          <AppShell>{children}</AppShell>
+        </div>
         <Chat />
       </body>
     </html>
