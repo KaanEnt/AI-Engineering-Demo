@@ -14,10 +14,9 @@ export const tools = {
 Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`,
     parameters: z.object({
       command: z.string().describe('The shell command to execute'),
-      timeout: z.number().default(30000).describe('Timeout in milliseconds (default: 30000, max: 300000)'),
     }),
-    execute: async ({ command, timeout }) => {
-      const effectiveTimeout = Math.min(timeout, 300000);
+    execute: async ({ command }) => {
+      const effectiveTimeout = 30000;
       const result = await executeCommand(command, effectiveTimeout);
 
       return {
@@ -192,12 +191,13 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
     description: `Create technical diagrams from DOT language notation. Use when the user asks to "create a diagram", "draw architecture", "make a flowchart", or describes a visual they need.`,
     parameters: z.object({
       dot_content: z.string().describe('DOT language content for the diagram'),
-      filename: z.string().default('diagram').describe('Output filename (without extension)'),
+      filename: z.string().optional().describe('Output filename without extension (default: diagram)'),
     }),
     execute: async ({ dot_content, filename }) => {
+      const outputName = filename ?? 'diagram';
       try {
-        const dotPath = `output/${filename}.dot`;
-        const pngPath = `output/${filename}.png`;
+        const dotPath = `output/${outputName}.dot`;
+        const pngPath = `output/${outputName}.png`;
         const fullDotPath = path.join(getProjectRoot(), dotPath);
 
         await fs.mkdir(path.dirname(fullDotPath), { recursive: true });
