@@ -1,5 +1,5 @@
 import { streamText, convertToModelMessages, type UIMessage, stepCountIs } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
+import { createAnthropic } from '@ai-sdk/anthropic';
 import { tools } from '@/lib/tools';
 import { SYSTEM_PROMPT } from '@/lib/prompts/system';
 
@@ -16,6 +16,10 @@ export async function POST(req: Request) {
         { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
+
+    const anthropic = createAnthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    });
 
     const result = streamText({
       model: anthropic('claude-sonnet-4-20250514'),
