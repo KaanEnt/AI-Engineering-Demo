@@ -1,0 +1,53 @@
+digraph SequenceFlow {
+    rankdir=LR;
+    splines=polyline;
+    nodesep=0.4;
+    ranksep=0.6;
+    bgcolor="white";
+    node [fontname="Arial", fontsize=10, height=0.5];
+    edge [fontname="Arial", fontsize=9];
+
+    // Row 1: Request path
+    subgraph cluster_request {
+        label="Request Path";
+        labeljust=l;
+        style=rounded;
+        color="#2563EB";
+        bgcolor="#EFF6FF";
+        fontname="Arial Bold";
+        fontsize=10;
+
+        client [label="Client" shape=box style="rounded,filled" fillcolor="white" color="#2563EB"];
+        gateway [label="API\nGateway" shape=box style="rounded,filled" fillcolor="white" color="#2563EB"];
+        service [label="Service" shape=box style="rounded,filled" fillcolor="#DDD6FE" color="#7C3AED"];
+        db1 [label="DB" shape=cylinder style=filled fillcolor="#FECACA" color="#DC2626"];
+    }
+
+    // Row 2: Processing path
+    subgraph cluster_process {
+        label="Processing Path";
+        labeljust=l;
+        style=rounded;
+        color="#059669";
+        bgcolor="#ECFDF5";
+        fontname="Arial Bold";
+        fontsize=10;
+
+        worker [label="Worker" shape=box style="rounded,filled" fillcolor="white" color="#7C3AED"];
+        processor [label="Processor" shape=box style="rounded,filled" fillcolor="white" color="#059669"];
+        db2 [label="DB" shape=cylinder style=filled fillcolor="#FECACA" color="#DC2626"];
+    }
+
+    // Request flow (numbered steps)
+    client -> gateway [label="1"];
+    gateway -> service [label="2"];
+    service -> db1 [label="3"];
+    
+    // Processing flow
+    service -> worker [label="4" constraint=false];
+    worker -> processor [label="5"];
+    processor -> db2 [label="6"];
+    
+    // Response
+    gateway -> client [label="7" style=dashed];
+}

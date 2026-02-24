@@ -1,0 +1,41 @@
+digraph Flowchart {
+    rankdir=TB;
+    splines=polyline;
+    nodesep=0.8;
+    ranksep=0.6;
+    bgcolor="white";
+    node [fontname="Arial", fontsize=11];
+    edge [fontname="Arial", fontsize=10];
+
+    // Start
+    start [label="Start" shape=box style="rounded,filled" fillcolor="#2563EB" fontcolor="white" color="#2563EB"];
+
+    // Decision nodes (diamonds)
+    decision1 [label="Condition A?" shape=diamond style=filled fillcolor="#FEF3C7" color="#D97706"];
+    decision2 [label="Condition B?" shape=diamond style=filled fillcolor="#FEF3C7" color="#D97706"];
+
+    // Process nodes
+    process1 [label="Process 1" shape=box style="rounded,filled" fillcolor="#ECFDF5" color="#059669"];
+    process2 [label="Process 2" shape=box style="rounded,filled" fillcolor="#ECFDF5" color="#059669"];
+    process3 [label="Process 3" shape=box style="rounded,filled" fillcolor="#ECFDF5" color="#059669"];
+
+    // End states
+    success [label="Success" shape=box style="rounded,filled" fillcolor="#DCFCE7" color="#059669"];
+    failure [label="Failure" shape=box style="rounded,filled" fillcolor="#FEE2E2" color="#DC2626"];
+
+    // Flow
+    start -> decision1;
+    decision1 -> process1 [label="Yes" fontcolor="#059669"];
+    decision1 -> decision2 [label="No" fontcolor="#DC2626"];
+    
+    process1 -> success;
+    
+    decision2 -> process2 [label="Yes" fontcolor="#059669"];
+    decision2 -> process3 [label="No" fontcolor="#DC2626"];
+    
+    process2 -> success;
+    process3 -> failure;
+
+    // Optional: Add a note
+    note [label="Notes:\n- Condition A checks X\n- Condition B checks Y" shape=note style=filled fillcolor="#F3F4F6" fontsize=9];
+}

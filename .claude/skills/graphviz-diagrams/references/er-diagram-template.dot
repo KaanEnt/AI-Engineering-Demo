@@ -1,0 +1,57 @@
+digraph ERDiagram {
+    rankdir=TB;
+    splines=polyline;
+    nodesep=1.0;
+    ranksep=1.2;
+    bgcolor="white";
+    node [fontname="Arial", fontsize=10, shape=none];
+    edge [fontname="Arial", fontsize=9];
+
+    // Tables as HTML-like labels
+    users [label=<
+        <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD BGCOLOR="#2563EB" COLSPAN="2"><FONT COLOR="white"><B>users</B></FONT></TD></TR>
+            <TR><TD BGCOLOR="#FEF3C7">id</TD><TD>uuid PK</TD></TR>
+            <TR><TD>email</TD><TD>text</TD></TR>
+            <TR><TD>name</TD><TD>text</TD></TR>
+            <TR><TD>created_at</TD><TD>timestamp</TD></TR>
+        </TABLE>
+    >];
+
+    orders [label=<
+        <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD BGCOLOR="#059669" COLSPAN="2"><FONT COLOR="white"><B>orders</B></FONT></TD></TR>
+            <TR><TD BGCOLOR="#FEF3C7">id</TD><TD>uuid PK</TD></TR>
+            <TR><TD BGCOLOR="#E9D5FF">user_id</TD><TD>uuid FK</TD></TR>
+            <TR><TD>total</TD><TD>decimal</TD></TR>
+            <TR><TD>status</TD><TD>text</TD></TR>
+            <TR><TD>created_at</TD><TD>timestamp</TD></TR>
+        </TABLE>
+    >];
+
+    items [label=<
+        <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD BGCOLOR="#D97706" COLSPAN="2"><FONT COLOR="white"><B>order_items</B></FONT></TD></TR>
+            <TR><TD BGCOLOR="#FEF3C7">id</TD><TD>uuid PK</TD></TR>
+            <TR><TD BGCOLOR="#E9D5FF">order_id</TD><TD>uuid FK</TD></TR>
+            <TR><TD BGCOLOR="#E9D5FF">product_id</TD><TD>uuid FK</TD></TR>
+            <TR><TD>quantity</TD><TD>integer</TD></TR>
+            <TR><TD>price</TD><TD>decimal</TD></TR>
+        </TABLE>
+    >];
+
+    products [label=<
+        <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" CELLPADDING="4">
+            <TR><TD BGCOLOR="#DC2626" COLSPAN="2"><FONT COLOR="white"><B>products</B></FONT></TD></TR>
+            <TR><TD BGCOLOR="#FEF3C7">id</TD><TD>uuid PK</TD></TR>
+            <TR><TD>name</TD><TD>text</TD></TR>
+            <TR><TD>price</TD><TD>decimal</TD></TR>
+            <TR><TD>stock</TD><TD>integer</TD></TR>
+        </TABLE>
+    >];
+
+    // Relationships with cardinality
+    users -> orders [label="1:N" color="#7C3AED"];
+    orders -> items [label="1:N" color="#7C3AED"];
+    products -> items [label="1:N" color="#7C3AED"];
+}

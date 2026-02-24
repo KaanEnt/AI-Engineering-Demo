@@ -1,0 +1,75 @@
+digraph Architecture {
+    rankdir=TB;
+    splines=polyline;
+    nodesep=0.6;
+    ranksep=0.8;
+    bgcolor="white";
+    node [fontname="Arial", fontsize=11];
+    edge [fontname="Arial", fontsize=9];
+
+    // Cluster: External Clients
+    subgraph cluster_clients {
+        label="External Clients";
+        labeljust=l;
+        style=rounded;
+        color="#2563EB";
+        bgcolor="#EFF6FF";
+        fontname="Arial Bold";
+        fontsize=12;
+        
+        web [label="Web App" shape=box style="rounded,filled" fillcolor="white" color="#2563EB"];
+        mobile [label="Mobile App" shape=box style="rounded,filled" fillcolor="white" color="#2563EB"];
+        api_client [label="API Client" shape=box style="rounded,filled" fillcolor="white" color="#2563EB"];
+    }
+
+    // Cluster: API Gateway
+    subgraph cluster_gateway {
+        label="API Gateway";
+        labeljust=l;
+        style=rounded;
+        color="#7C3AED";
+        bgcolor="#F5F3FF";
+        fontname="Arial Bold";
+        fontsize=12;
+        
+        auth [label="Auth" shape=box style="rounded,filled" fillcolor="#DDD6FE" color="#7C3AED"];
+        router [label="Router" shape=box style="rounded,filled" fillcolor="#DDD6FE" color="#7C3AED"];
+        rate_limit [label="Rate Limit" shape=box style="rounded,filled" fillcolor="#DDD6FE" color="#7C3AED"];
+    }
+
+    // Cluster: Core Services
+    subgraph cluster_services {
+        label="Core Services";
+        labeljust=l;
+        style=rounded;
+        color="#059669";
+        bgcolor="#ECFDF5";
+        fontname="Arial Bold";
+        fontsize=12;
+        
+        service_a [label="Service A" shape=box style="rounded,filled" fillcolor="#A7F3D0" color="#059669"];
+        service_b [label="Service B" shape=box style="rounded,filled" fillcolor="#A7F3D0" color="#059669"];
+    }
+
+    // Cluster: Data Layer
+    subgraph cluster_data {
+        label="Data Layer";
+        labeljust=l;
+        style=rounded;
+        color="#DC2626";
+        bgcolor="#FEE2E2";
+        fontname="Arial Bold";
+        fontsize=12;
+        
+        db [label="Database" shape=cylinder style=filled fillcolor="#FECACA" color="#DC2626"];
+        cache [label="Cache" shape=box style="rounded,filled" fillcolor="#FECACA" color="#DC2626"];
+    }
+
+    // Connections
+    {web mobile api_client} -> router [color="#64748B"];
+    router -> auth [color="#64748B"];
+    auth -> rate_limit [color="#64748B"];
+    rate_limit -> {service_a service_b} [color="#64748B"];
+    {service_a service_b} -> db [color="#64748B"];
+    {service_a service_b} -> cache [color="#64748B"];
+}

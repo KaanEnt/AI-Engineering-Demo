@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { getProjectRoot } from '@/lib/tools/sandbox';
 
 interface DiscoveredSkill {
   dirName: string;
@@ -9,7 +10,7 @@ interface DiscoveredSkill {
 }
 
 async function discoverSkills(): Promise<DiscoveredSkill[]> {
-  const skillsDir = path.join(process.cwd(), '.claude', 'skills');
+  const skillsDir = path.join(getProjectRoot(), '.claude', 'skills');
   try {
     const entries = await fs.readdir(skillsDir, { withFileTypes: true });
     const skills: DiscoveredSkill[] = [];

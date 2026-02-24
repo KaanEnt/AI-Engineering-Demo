@@ -1,4 +1,6 @@
 import { spawn } from 'child_process';
+import * as path from 'path';
+import * as fs from 'fs';
 
 const BLOCKED_COMMANDS = [
   'rm -rf',
@@ -190,6 +192,25 @@ export function validateEditPath(filePath: string): { valid: boolean; error?: st
   return { valid: true };
 }
 
+let _cachedRoot: string | null = null;
+
 export function getProjectRoot(): string {
-  return process.cwd();
+  if (_cachedRoot) return _cachedRoot;
+
+  let dir = process.cwd();
+  const { root } = path.parse(dir);
+
+  while (dir !== root) {
+    if (
+      fs.existsSync(path.join(dir, '.git')) ||
+      fs.existsSync(path.join(dir, '.claude'))
+    ) {
+      _cachedRoot = dir;
+      return dir;
+    }
+    dir = path.dirname(dir);
+  }
+
+  _cachedRoot = process.cwd();
+  return _cachedRoot;
 }
