@@ -187,6 +187,139 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
     },
   }),
 
+  web_fetch: tool({
+    description: `Fetch and extract readable text content from any URL. Use when the user asks to visit, read, check, or scrape a website, or provides a URL to look at.`,
+    inputSchema: z.object({
+      url: z.string().url().describe('The URL to fetch'),
+    }),
+    execute: async ({ url }) => {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000);
+
+        const response = await fetch(url, {
+          signal: controller.signal,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+          },
+        });
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+          return { success: false, error: `HTTP ${response.status}: ${response.statusText}`, url };
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+        const html = await response.text();
+
+        if (contentType.includes('application/json')) {
+          const maxLen = 50000;
+          return {
+            success: true,
+            url,
+            contentType: 'json',
+            content: html.length > maxLen ? html.slice(0, maxLen) + '\n[truncated]' : html,
+          };
+        }
+
+        const extractions: string[] = [];
+
+        const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+        if (titleMatch) extractions.push(`# ${titleMatch[1].trim()}`);
+
+        const metaDesc = html.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+          || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
+        if (metaDesc) extractions.push(metaDesc[1].trim());
+
+        const ogDesc = html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i)
+          || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:description["']/i);
+        if (ogDesc && ogDesc[1] !== metaDesc?.[1]) extractions.push(ogDesc[1].trim());
+
+        const nextDataMatch = html.match(/<script[^>]+id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i);
+        if (nextDataMatch) {
+          try {
+            const nextData = JSON.parse(nextDataMatch[1]);
+            const pageProps = nextData?.props?.pageProps;
+            if (pageProps) {
+              const extractText = (obj: unknown, depth = 0): string[] => {
+                if (depth > 5) return [];
+                const texts: string[] = [];
+                if (typeof obj === 'string' && obj.length > 20 && obj.length < 5000) {
+                  texts.push(obj);
+                } else if (Array.isArray(obj)) {
+                  for (const item of obj) texts.push(...extractText(item, depth + 1));
+                } else if (obj && typeof obj === 'object') {
+                  for (const val of Object.values(obj as Record<string, unknown>)) {
+                    texts.push(...extractText(val, depth + 1));
+                  }
+                }
+                return texts;
+              };
+              const nextTexts = extractText(pageProps);
+              if (nextTexts.length > 0) {
+                extractions.push('\n--- Page Data ---\n' + nextTexts.join('\n\n'));
+              }
+            }
+          } catch { /* ignore parse errors */ }
+        }
+
+        let text = html;
+
+        const mainContent = html.match(/<main[\s\S]*?<\/main>/i)
+          || html.match(/<article[\s\S]*?<\/article>/i)
+          || html.match(/<div[^>]+(?:role=["']main["']|id=["'](?:content|main|app)["']|class=["'][^"']*content[^"']*["'])[\s\S]*?<\/div>/i);
+
+        if (mainContent) {
+          text = mainContent[0];
+        }
+
+        text = text
+          .replace(/<script[\s\S]*?<\/script>/gi, '')
+          .replace(/<style[\s\S]*?<\/style>/gi, '')
+          .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+          .replace(/<footer[\s\S]*?<\/footer>/gi, '');
+
+        text = text
+          .replace(/<a[^>]+href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, '$2 ($1)')
+          .replace(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/gi, '\n\n## $1\n')
+          .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, '  - $1\n')
+          .replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, '$1\n\n')
+          .replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<[^>]+>/g, '')
+          .replace(/&nbsp;/g, ' ')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/\n{3,}/g, '\n\n')
+          .replace(/[ \t]+/g, ' ')
+          .trim();
+
+        let finalContent = extractions.length > 0
+          ? extractions.join('\n\n') + '\n\n--- Page Content ---\n\n' + text
+          : text;
+
+        const maxLength = 50000;
+        const truncated = finalContent.length > maxLength;
+        if (truncated) {
+          finalContent = finalContent.slice(0, maxLength) + '\n[truncated]';
+        }
+
+        return { success: true, url, contentType: 'html', content: finalContent, truncated };
+      } catch (error) {
+        const err = error as Error;
+        return {
+          success: false,
+          url,
+          error: err.name === 'AbortError' ? 'Request timed out (15s)' : err.message,
+        };
+      }
+    },
+  }),
+
   create_diagram: tool({
     description: `Create technical diagrams from DOT language notation. Use when the user asks to "create a diagram", "draw architecture", "make a flowchart", or describes a visual they need.`,
     inputSchema: z.object({

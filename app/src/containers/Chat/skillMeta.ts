@@ -7,6 +7,12 @@ export const SKILL_META: Record<
     description: string;
   }
 > = {
+  web_fetch: {
+    name: "Web Fetch",
+    icon: "Globe",
+    color: "blue",
+    description: "Fetches content from URLs",
+  },
   scrape_devpost: {
     name: "Devpost Scraper",
     icon: "Globe",

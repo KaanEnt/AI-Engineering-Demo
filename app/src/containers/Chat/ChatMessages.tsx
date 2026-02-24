@@ -4,7 +4,7 @@ import { useRef, useEffect } from "react";
 import type { UIMessage } from "@ai-sdk/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Loader2, Wrench, Globe, FileText, GitBranch } from "lucide-react";
+import { Loader2, Wrench, Globe, FileText, GitBranch, CheckCircle2, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SKILL_META } from "./skillMeta";
 
@@ -30,21 +30,39 @@ function getToolInvocations(message: UIMessage): ToolInvocationData[] {
   const invocations: ToolInvocationData[] = [];
 
   for (const part of message.parts) {
-    if (part.type.startsWith("tool-")) {
-      const toolPart = part as unknown as {
+    const partType = part.type as string;
+
+    if (partType === "dynamic-tool") {
+      const dynPart = part as unknown as {
         type: string;
         toolCallId: string;
         toolName: string;
-        args?: Record<string, unknown>;
+        state: string;
         input?: unknown;
         output?: unknown;
-        state: string;
       };
+      invocations.push({
+        toolCallId: dynPart.toolCallId,
+        toolName: dynPart.toolName,
+        args: (dynPart.input as Record<string, unknown>) || {},
+        state: dynPart.state,
+        result: dynPart.output,
+      });
+    } else if (partType.startsWith("tool-")) {
+      const toolPart = part as unknown as {
+        type: string;
+        toolCallId: string;
+        state: string;
+        input?: unknown;
+        output?: unknown;
+      };
+
+      const toolName = partType.slice(5);
 
       invocations.push({
         toolCallId: toolPart.toolCallId,
-        toolName: toolPart.toolName,
-        args: toolPart.args || (toolPart.input as Record<string, unknown>) || {},
+        toolName,
+        args: (toolPart.input as Record<string, unknown>) || {},
         state: toolPart.state,
         result: toolPart.output,
       });
@@ -77,24 +95,25 @@ function SkillBadge({ toolName }: { toolName: string }) {
 function ToolInvocationDisplay({ toolInvocation }: { toolInvocation: ToolInvocationData }) {
   const { toolName, args, state, result } = toolInvocation;
 
+  const isRunning = state === "input-streaming" || state === "input-available";
+  const isDone = state === "output-available";
+  const isError = state === "output-error";
+
   const getStatusColor = () => {
-    switch (state) {
-      case "partial-call":
-      case "call":
-        return "text-neutral-400";
-      case "result":
-        return (result as { success?: boolean })?.success
-          ? "text-white"
-          : "text-neutral-400";
-      default:
-        return "text-neutral-500";
+    if (isRunning) return "text-neutral-400";
+    if (isError) return "text-red-400";
+    if (isDone) {
+      return (result as { success?: boolean })?.success
+        ? "text-white"
+        : "text-neutral-400";
     }
+    return "text-neutral-500";
   };
 
   const getStatusIcon = () => {
-    if (state === "partial-call" || state === "call") {
-      return <Loader2 className="w-3 h-3 animate-spin" />;
-    }
+    if (isRunning) return <Loader2 className="w-3 h-3 animate-spin" />;
+    if (isError) return <XCircle className="w-3 h-3" />;
+    if (isDone && (result as { success?: boolean })?.success) return <CheckCircle2 className="w-3 h-3" />;
     return <Wrench className="w-3 h-3" />;
   };
 
@@ -119,7 +138,7 @@ function ToolInvocationDisplay({ toolInvocation }: { toolInvocation: ToolInvocat
         {getStatusIcon()}
         <span>{toolName}</span>
         <span className="text-neutral-600">
-          {state === "result" ? "completed" : "executing..."}
+          {isDone ? "completed" : isError ? "error" : "executing..."}
         </span>
       </div>
 
@@ -150,13 +169,19 @@ function ToolInvocationDisplay({ toolInvocation }: { toolInvocation: ToolInvocat
         </div>
       )}
 
+      {toolName === "web_fetch" && !!args?.url && (
+        <div className="mt-1 text-[10px] font-mono text-neutral-500 truncate">
+          {String(args.url)}
+        </div>
+      )}
+
       {toolName === "create_diagram" && !!args?.filename && (
         <div className="mt-1 text-[10px] font-mono text-neutral-500 truncate">
           {String(args.filename)}.dot
         </div>
       )}
 
-      {state === "result" && typedResult && (
+      {(isDone || isError) && typedResult && (
         <div className="mt-1 text-[10px] font-mono text-neutral-500 max-h-20 overflow-hidden">
           {typedResult.error && (
             <span className="text-neutral-400">{String(typedResult.error)}</span>
