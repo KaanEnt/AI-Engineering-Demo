@@ -12,7 +12,7 @@ export const tools = {
 - Running build commands
 - Checking file existence with dir/ls
 Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`,
-    parameters: z.object({
+    inputSchema: z.object({
       command: z.string().describe('The shell command to execute'),
     }),
     execute: async ({ command }) => {
@@ -31,7 +31,7 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
 
   read_file: tool({
     description: `Read the contents of a file. Paths are relative to the project root.`,
-    parameters: z.object({
+    inputSchema: z.object({
       path: z.string().describe('Path to the file (relative to project root)'),
     }),
     execute: async ({ path: filePath }) => {
@@ -74,7 +74,7 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
 
   write_file: tool({
     description: `Write content to a file. RESTRICTED to the output/ directory only for safety.`,
-    parameters: z.object({
+    inputSchema: z.object({
       path: z.string().describe('Path to the file (must be within output/ directory)'),
       content: z.string().describe('Content to write to the file'),
     }),
@@ -106,7 +106,7 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
 
   list_directory: tool({
     description: `List files and directories in a given path. Paths are relative to the project root.`,
-    parameters: z.object({
+    inputSchema: z.object({
       path: z.string().describe('Path to the directory (relative to project root)'),
     }),
     execute: async ({ path: dirPath }) => {
@@ -150,7 +150,7 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
 
   scrape_devpost: tool({
     description: `Scrape a Devpost hackathon gallery for attendee profiles and GitHub links. Use when the user mentions "scrape devpost", "devpost attendees", "hackathon attendees", or provides a devpost.com gallery URL.`,
-    parameters: z.object({
+    inputSchema: z.object({
       gallery_url: z.string().describe('Devpost project gallery URL'),
     }),
     execute: async ({ gallery_url }) => {
@@ -170,7 +170,7 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
 
   extract_document: tool({
     description: `Extract text from PDFs and documents (local files or URLs). Use when the user mentions "read pdf", "extract pdf", "parse document", or provides a PDF file path/URL.`,
-    parameters: z.object({
+    inputSchema: z.object({
       file_path: z.string().describe('Path or URL to the document'),
     }),
     execute: async ({ file_path }) => {
@@ -189,7 +189,7 @@ Commands are sandboxed - destructive commands (rm -rf, sudo, etc.) are blocked.`
 
   create_diagram: tool({
     description: `Create technical diagrams from DOT language notation. Use when the user asks to "create a diagram", "draw architecture", "make a flowchart", or describes a visual they need.`,
-    parameters: z.object({
+    inputSchema: z.object({
       dot_content: z.string().describe('DOT language content for the diagram'),
       filename: z.string().optional().describe('Output filename without extension (default: diagram)'),
     }),
