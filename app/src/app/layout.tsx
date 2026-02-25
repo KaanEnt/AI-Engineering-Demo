@@ -21,7 +21,7 @@ const newsreader = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: "Acme Dashboard",
+  title: "Double Down Dashboard",
   description: "Containerized dashboard with persistent chat",
 };
 

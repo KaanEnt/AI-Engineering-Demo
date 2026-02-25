@@ -9,7 +9,7 @@ export function Header() {
           A
         </div>
         <span className="text-lg font-semibold tracking-tight text-foreground">
-          Acme Dashboard
+          Double Down Dashboard
         </span>
         <Badge variant="secondary" className="text-[10px] uppercase tracking-wider">
           Beta

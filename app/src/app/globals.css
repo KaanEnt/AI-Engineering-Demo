@@ -126,6 +126,14 @@
   }
 }
 
+*:not(.chatbar-root *) {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*:not(.chatbar-root *)::-webkit-scrollbar {
+  display: none;
+}
+
 /* Chatbar scrollbar styling */
 .chatbar-root ::-webkit-scrollbar {
   width: 6px;
